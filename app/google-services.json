@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1030674967322",
+    "project_id": "signatext-ea5bb",
+    "storage_bucket": "signatext-ea5bb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1030674967322:android:3181209ddda57986c31aa3",
+        "android_client_info": {
+          "package_name": "com.example.signatext"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqmHcgI1cXD6q_xjfDVXLgFnVa4O1F5_M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
