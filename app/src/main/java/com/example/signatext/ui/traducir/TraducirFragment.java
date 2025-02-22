@@ -18,7 +18,7 @@ public class TraducirFragment extends Fragment {
     private PreviewView previewView;
 
     public TraducirFragment() {
-        // Constructor vacío requerido
+
     }
 
     @Override
@@ -41,8 +41,10 @@ public class TraducirFragment extends Fragment {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                 androidx.camera.core.Preview preview = new androidx.camera.core.Preview.Builder().build();
+
+
                 androidx.camera.core.CameraSelector cameraSelector = new androidx.camera.core.CameraSelector.Builder()
-                        .requireLensFacing(androidx.camera.core.CameraSelector.LENS_FACING_BACK)
+                        .requireLensFacing(androidx.camera.core.CameraSelector.LENS_FACING_FRONT)
                         .build();
 
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
