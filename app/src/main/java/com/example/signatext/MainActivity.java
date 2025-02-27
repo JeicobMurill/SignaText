@@ -30,49 +30,41 @@ public class MainActivity extends AppCompatActivity {
 
         // Inicializar Firebase
         FirebaseApp.initializeApp(this);
+        verificarConexionFirebase();
 
-        // Verificar si Firebase está conectado
-        if (FirebaseApp.getApps(this).isEmpty()) {
-            Log.e("Firebase", "Error: Firebase no está conectado");
-            Toast.makeText(this, "Error: Firebase no conectado", Toast.LENGTH_SHORT).show();
-        } else {
-            Log.d("Firebase", "Firebase está conectado correctamente");
-            Toast.makeText(this, "Firebase conectado", Toast.LENGTH_SHORT).show();
-        }
-
+        // Solicitar permisos de cámara
         requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
                     if (isGranted) {
-                        Toast.makeText(this, "Permiso concedido", Toast.LENGTH_SHORT).show();
+                        Log.d("Permiso", "Permiso de cámara concedido");
                     } else {
-                        Toast.makeText(this, "Permiso denegado", Toast.LENGTH_SHORT).show();
+                        Log.e("Permiso", "Permiso de cámara denegado");
+                        Toast.makeText(this, "Permiso de cámara requerido", Toast.LENGTH_LONG).show();
                     }
                 }
         );
-
         checkCameraPermission();
 
+        // Configuración de la barra de navegación inferior
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Fragment selectedFragment = null;
-                if (item.getItemId() == R.id.nav_home) {
-                    selectedFragment = new HomeFragment();
-                } else if (item.getItemId() == R.id.nav_traducir) {
-                    selectedFragment = new TraducirFragment();
-                }
-
-                if (selectedFragment != null) {
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.fragment_container, selectedFragment)
-                            .commit();
-                }
-                return true;
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
+            if (item.getItemId() == R.id.nav_home) {
+                selectedFragment = new HomeFragment();
+            } else if (item.getItemId() == R.id.nav_traducir) {
+                selectedFragment = new TraducirFragment();
             }
+
+            if (selectedFragment != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, selectedFragment)
+                        .commit();
+            }
+            return true;
         });
 
+        // Cargar el fragmento inicial
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new HomeFragment())
@@ -83,9 +75,18 @@ public class MainActivity extends AppCompatActivity {
     private void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Permiso de cámara ya concedido", Toast.LENGTH_SHORT).show();
+            Log.d("Permiso", "Permiso de cámara ya concedido");
         } else {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
+
+    private void verificarConexionFirebase() {
+        if (FirebaseApp.getApps(this).isEmpty()) {
+            Log.e("Firebase", "Error: Firebase no está conectado");
+            Toast.makeText(this, "Error: Firebase no conectado", Toast.LENGTH_LONG).show();
+        } else {
+            Log.d("Firebase", "Firebase conectado correctamente");
         }
     }
 }

@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.traducir.TraducirFragment">
 
-    <!-- Vista de la cámara en la parte superior -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="0dp"
@@ -17,12 +16,11 @@
         app:layout_constraintDimensionRatio="16:9"
         android:background="#000000" />
 
-    <!-- Cuadro de texto debajo de la cámara -->
     <TextView
         android:id="@+id/tvTranslatedText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Texto traducido aquí"
+        android:text="Esperando señas..."
         android:textSize="20sp"
         android:textColor="#FFFFFF"
         android:gravity="center"
@@ -31,5 +29,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>
