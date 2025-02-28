@@ -9,7 +9,6 @@ public class SignaTextApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // Inicializar Firebase
         FirebaseApp.initializeApp(this);
     }
 }

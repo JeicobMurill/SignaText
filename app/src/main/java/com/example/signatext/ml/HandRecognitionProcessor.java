@@ -19,13 +19,10 @@ public class HandRecognitionProcessor {
 
     public HandRecognitionProcessor(TextView textView) {
         this.textView = textView;
-
-        // Se usa el modo preciso de detección de poses
         AccuratePoseDetectorOptions options =
                 new AccuratePoseDetectorOptions.Builder()
                         .setDetectorMode(AccuratePoseDetectorOptions.STREAM_MODE)
                         .build();
-
         poseDetector = PoseDetection.getClient(options);
     }
 
@@ -35,58 +32,59 @@ public class HandRecognitionProcessor {
             imageProxy.close();
             return;
         }
-
-        InputImage image = InputImage.fromMediaImage(imageProxy.getImage(), imageProxy.getImageInfo().getRotationDegrees());
-
+        InputImage image = InputImage.fromMediaImage(
+                imageProxy.getImage(), imageProxy.getImageInfo().getRotationDegrees());
         poseDetector.process(image)
                 .addOnSuccessListener(pose -> {
-                    String letraDetectada = detectarLetra(pose);
-                    textView.post(() -> textView.setText(letraDetectada));
+                    String detectedLetter = detectarLetra(pose);
+                    textView.post(() -> textView.setText(detectedLetter));
                 })
-                .addOnFailureListener(e -> Log.e(TAG, "Error en el reconocimiento de la mano", e))
+                .addOnFailureListener(e -> Log.e(TAG, "Error en el reconocimiento", e))
                 .addOnCompleteListener(task -> imageProxy.close());
     }
 
     private String detectarLetra(Pose pose) {
+        // Usamos landmarks de la mano derecha.
         PoseLandmark wrist = pose.getPoseLandmark(PoseLandmark.RIGHT_WRIST);
-        PoseLandmark thumbTip = pose.getPoseLandmark(PoseLandmark.RIGHT_THUMB);
+        PoseLandmark thumb = pose.getPoseLandmark(PoseLandmark.RIGHT_THUMB);
         PoseLandmark index = pose.getPoseLandmark(PoseLandmark.RIGHT_INDEX);
-        PoseLandmark pinky = pose.getPoseLandmark(PoseLandmark.RIGHT_PINKY); // Se usa para verificar alineación
 
-        if (thumbTip == null || index == null || pinky == null) {
-            Log.e(TAG, "No se detectaron todos los landmarks");
+        if (wrist == null || thumb == null || index == null) {
+            Log.e(TAG, "Faltan landmarks");
             return "Mano no detectada";
         }
 
-        PointF thumbTipPos = thumbTip.getPosition();
-        PointF indexPos = index.getPosition();
-        PointF pinkyPos = pinky.getPosition();
-        PointF wristPos = wrist != null ? wrist.getPosition() : new PointF(0, 0);
-
-        if (isFistClosed(thumbTipPos, indexPos, wristPos)) {
-            return "A"; // Puño cerrado
-        } else if (isBShape(indexPos, pinkyPos, thumbTipPos, wristPos)) {
-            return "B"; // Letra B
-        } else if (isCShape(indexPos, thumbTipPos)) {
-            return "C"; // Letra C
+        float likelihoodThreshold = 0.5f;
+        if (wrist.getInFrameLikelihood() < likelihoodThreshold ||
+                thumb.getInFrameLikelihood() < likelihoodThreshold ||
+                index.getInFrameLikelihood() < likelihoodThreshold) {
+            Log.e(TAG, "Baja probabilidad en los landmarks");
+            return "Mano no detectada";
         }
 
+        PointF wristPos = wrist.getPosition();
+        PointF thumbPos = thumb.getPosition();
+        PointF indexPos = index.getPosition();
+
+
+        if (distance(thumbPos, wristPos) > 40 && distance(indexPos, wristPos) > 40) {
+            float dThumbIndex = distance(thumbPos, indexPos);
+            if (dThumbIndex >= 20 && dThumbIndex < 40) {
+
+                PointF mid = new PointF((thumbPos.x + indexPos.x) / 2, (thumbPos.y + indexPos.y) / 2);
+
+                float threshold = 20f;
+                float diffY = mid.y - wristPos.y;
+                if (diffY > threshold) {
+                    return "A";  // Apertura hacia abajo.
+                } else if (diffY < -threshold) {
+                    return "U";  // Apertura hacia arriba.
+                } else {
+                    return "C";  // Apertura neutra.
+                }
+            }
+        }
         return "No reconocido";
-    }
-
-    private boolean isFistClosed(PointF thumb, PointF index, PointF wrist) {
-        return distance(thumb, wrist) < 50 && distance(index, wrist) < 50;
-    }
-
-    private boolean isBShape(PointF index, PointF pinky, PointF thumb, PointF wrist) {
-        // La "B" se detecta si:
-        // - El índice y el meñique están alineados horizontalmente
-        // - El pulgar está más abajo que la muñeca (doblado)
-        return Math.abs(index.y - pinky.y) < 30 && thumb.y > wrist.y;
-    }
-
-    private boolean isCShape(PointF index, PointF thumb) {
-        return distance(index, thumb) < 50;
     }
 
     private float distance(PointF p1, PointF p2) {

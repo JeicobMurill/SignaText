@@ -26,7 +26,7 @@ public class TraducirFragment extends Fragment {
     private HandRecognitionProcessor handRecognitionProcessor;
 
     public TraducirFragment() {
-        // Constructor vacío requerido
+
     }
 
     @Override
